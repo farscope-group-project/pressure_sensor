@@ -35,21 +35,21 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
     sensor API sensor_t type (see Adafruit_Sensor for more information)
 */
 /**************************************************************************/
-void displaySensorDetails(void)
-{
-  sensor_t sensor;
-  bmp.getSensor(&sensor);
-  Serial.println("------------------------------------");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");  
-  Serial.println("------------------------------------");
-  Serial.println("");
-  delay(500);
-}
+//void displaySensorDetails(void)
+//{
+//  sensor_t sensor;
+//  bmp.getSensor(&sensor);
+//  Serial.println("------------------------------------");
+//  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+//  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+//  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+//  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" hPa");
+//  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" hPa");
+//  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" hPa");  
+//  Serial.println("------------------------------------");
+//  Serial.println("");
+//  delay(500);
+//}
 
 /**************************************************************************/
 /*
@@ -59,7 +59,6 @@ void displaySensorDetails(void)
 void setup(void) 
 {
   Serial.begin(9600);
-  Serial.println("Pressure Sensor Test"); Serial.println("");
   
   /* Initialise the sensor */
   if(!bmp.begin())
@@ -70,7 +69,7 @@ void setup(void)
   }
   
   /* Display some basic information on this sensor */
-  displaySensorDetails();
+  //displaySensorDetails();
 }
 
 /**************************************************************************/
@@ -89,37 +88,21 @@ void loop(void)
   if (event.pressure)
   {
     /* Display atmospheric pressue in hPa */
-    Serial.print("Pressure:    ");
     Serial.print(event.pressure);
-    Serial.println(" hPa");
     
     /* Calculating altitude with reasonable accuracy requires pressure    *
-     * sea level pressure for your position at the moment the data is     *
-     * converted, as well as the ambient temperature in degress           *
-     * celcius.  If you don't have these values, a 'generic' value of     *
-     * 1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA   *
-     * in sensors.h), but this isn't ideal and will give variable         *
-     * results from one day to the next.                                  *
-     *                                                                    *
-     * You can usually find the current SLP value by looking at weather   *
-     * websites or from environmental information centers near any major  *
-     * airport.                                                           *
-     *                                                                    *
-     * For example, for Paris, France you can check the current mean      *
-     * pressure and sea level at: http://bit.ly/16Au8ol                   */
-     
-    /* Then convert the atmospheric pressure, and SLP to altitude         */
+
     /* Update this next line with the current SLP for better results      */
-    float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
-    Serial.print("Altitude:    "); 
-    Serial.print(bmp.pressureToAltitude(seaLevelPressure,
-                                        event.pressure)); 
-    Serial.println(" m");
-    Serial.println("");
   }
   else
   {
     Serial.println("Sensor error");
   }
   delay(1000);
+
+  switch(STATE)
+  {
+    case 0: 
+    //Calibration() When vacuum is 
+  }
 }
