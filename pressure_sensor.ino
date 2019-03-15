@@ -5,31 +5,35 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 
-#define THRESHOLD 870
+#define THRESHOLD_LOWER 870
+#define THRESHOLD_UPPER 960
 #define N_READINGS 10
 #define VACUUM_PIN 12
 
 
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 bool vacuum_flag = false;
+bool grip_flag = false;
 long pressure_sum = 0;
 int pressure_avg;
 int counter = 0;
 
 ros::NodeHandle  nh;
-std_msgs::Bool b_msg;
-ros::Publisher vacuum_on("vacuum_on", &b_msg);
+std_msgs::Bool b_msg_Held;
+std_msgs::Bool b_msg_Status;
+ros::Publisher ItemHeld("ItemHeld", &b_msg_Held);
+ros::Publisher VacuumStatus("VacuumStatus", &b_msg_Status);
 
 
-void messageCb( const std_msgs::Empty& toggle_msg)
+void messageCb( const std_msgs::Bool& toggle_msg)
 {
-  if (digitalRead(VACUUM_PIN) == HIGH)
+  if (toggle_msg.data == true)
     digitalWrite(VACUUM_PIN, LOW);
   else
     digitalWrite(VACUUM_PIN, HIGH);
 }
 
-ros::Subscriber<std_msgs::Empty> vacuum_toggle("toggle_vacuum", messageCb );
+ros::Subscriber<std_msgs::Bool> GripItem("GripItem", messageCb );
 
 
 
@@ -43,10 +47,12 @@ void setup(void)
     //If error, what to do? Send error message via ROS?
   }
   pinMode(VACUUM_PIN, OUTPUT);
+  digitalWrite(VACUUM_PIN, HIGH);
 
   nh.initNode();
-  nh.advertise(vacuum_on);
-  nh.subscribe(vacuum_toggle);
+  nh.advertise(ItemHeld);
+  nh.advertise(VacuumStatus);
+  nh.subscribe(GripItem);
 }
 
 void loop(void)
@@ -61,10 +67,15 @@ void loop(void)
     pressure_sum = 0;
     counter = 0;
 
-    if (pressure_avg < THRESHOLD)
-      vacuum_flag = true;
+    if (pressure_avg < THRESHOLD_LOWER)
+      grip_flag = true;
 
-    else if (pressure_avg > THRESHOLD)
+    else if (pressure_avg > THRESHOLD_LOWER)
+      grip_flag = false;
+
+    if (pressure_avg < THRESHOLD_UPPER)
+      vacuum_flag = true;
+    else if (pressure_avg > THRESHOLD_UPPER)
       vacuum_flag = false;
   }
   else
@@ -73,8 +84,10 @@ void loop(void)
     counter++;
   }
 
-  b_msg.data = vacuum_flag;
-  vacuum_on.publish(&b_msg );
+  b_msg_Held.data = grip_flag;
+  b_msg_Status.data = vacuum_flag;
+  ItemHeld.publish(&b_msg_Held);
+  VacuumStatus.publish(&b_msg_Status);
   nh.spinOnce();
 
   delay(10);
